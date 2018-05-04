@@ -3,7 +3,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
+
+
 
 public class hashload {
 
@@ -11,7 +15,8 @@ public class hashload {
 		int pageIndex = 0;//set the default pageIndex
 		int pageSize;// set the default pageSize
 		hashload hashload=new hashload();
-		Hashtable<String,String>table=new Hashtable<String,String>();
+		Hashtable table=new Hashtable();
+		int tableSize=1023;
 		FileInputStream input;//set the file input stream
 		File file; //set file varable
 		try {
@@ -21,6 +26,9 @@ public class hashload {
 			input = new FileInputStream(file);//input the file
 			byte[] readFile = new byte[pageSize];
 			int count=0;
+			File hash =new File("hash."+ args[0]) ;
+			FileOutputStream fos=new FileOutputStream(hash);
+			ObjectOutputStream hashout= new ObjectOutputStream(fos);
 			while (input.read(readFile, 0, pageSize) != -1) {
 		        count++;
 				int recoreNumber = hashload.getRecordNumber(readFile);//set the recoreNumber
@@ -28,29 +36,40 @@ public class hashload {
 					System.out.println("");
 				ArrayList<Integer> recordIndex = hashload.getIndex(readFile, recoreNumber);//set the recordIndex
 				ArrayList<Record> records = hashload.getRecord(readFile, recordIndex);//set the record
+			
 				
-				
+				int hashcode;
 				for (int i = 0; i < records.size(); i++) {//search and retrieve data
 					
-					//System.out.println(count+" " +records.get(i).getField().get(1).getContent()+" ");
-				   
-					table.put(Integer.toString(count),records.get(i).getField().get(1).getContent());
+					
+					String Bn=(records.get(i).getField().get(1).getContent());								
+				    hashcode=Math.abs((Bn.hashCode()%2097151));
+				 table.put(records.get(i).getField().get(1).getContent(),Integer.toString(count));
+				
 				}
-				File hash =new File("hash."+ args[0]) ;
-				FileOutputStream fos=new FileOutputStream(hash);
-				ObjectOutputStream hashout= new ObjectOutputStream(fos);
-				hashout.writeObject(table);
-				hashout.flush();
+				
+				
+			}
+			hashout.writeObject(table);
+           
+			Enumeration ee = table.keys();
+			String key = null;
+			while(ee.hasMoreElements()) {
+				key = (String)ee.nextElement();
+				Object obj = table.get(key);
+				System.out.println(key+"->"+obj+"\n");
+			}	
+			hashout.flush();
+			
 				hashout.close();
              
-			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Cannot read the Heap File");
 		}
 		
 	}
+	
 	public int getRecordNumber(byte[] readFile) {//get the record number 
 		byte[] temp = new byte[4];
 		System.arraycopy(readFile, 0, temp, 0, 4);
@@ -132,5 +151,7 @@ public class hashload {
 		}
 		return result;
 	}
+	
+	
 }
 
