@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * @Description: running the searching querry
  * @Date: Created on 21/03/2018
  * @Version 1.0
- */
+ */ 
 public class dbquery {
 
 	public static void main(String[] args) {
@@ -18,33 +18,45 @@ public class dbquery {
 		File file; //set file varable
 		int pageIndex = 0;//set the default pageIndex
 		int pageSize;// set the default pageSize
+		String text = args[0];
+		pageSize = Integer.parseInt(args[1]); 
 		long startTime = 0;
 		long endTime=0;
+		 //dbquery.readHeap(4096);
+		 Calculate calculator=new Calculate(0,0,startTime,endTime);
+		 calculator.setStatrTime();//start timing
+		 dbquery.searchHeap(text, pageSize);
+		 calculator.SetEndTime();
+         calculator.CalculateTime2();
+	}
+	public void searchHeap(String text,int pageSize) {
 		try {
-            Calculate calculator=new Calculate(0,0,startTime,endTime);
-			String text = args[0]; // Get the text query
-			pageSize = Integer.parseInt(args[1]); // Get the pagesize
-			String filePath = ("heap." + args[1]); // Get the file name
+			
+			FileInputStream input;//set the file input stream
+			File file; //set file varable
+			String filePath = ("heap." +pageSize); // Get the file name
 			file = new File(filePath); //set the file to load file from the path
 			input = new FileInputStream(file);//input the file
 			byte[] readFile = new byte[pageSize];//set the array to store heap file's data
 			int count = 0;
-			calculator.setStatrTime();//start timing
+			
 			while (input.read(readFile, 0, pageSize) != -1) {
 				count++;
-				int recoreNumber = dbquery.getRecordNumber(readFile);//set the recoreNumber
+				int recoreNumber = getRecordNumber(readFile);//set the recoreNumber
 				if (recoreNumber <= 0)//fill the empty value
 					System.out.println("");
-				ArrayList<Integer> recordIndex = dbquery.getIndex(readFile, recoreNumber);//set the recordIndex
-				ArrayList<Record> records = dbquery.getRecord(readFile, recordIndex);//set the record
+				ArrayList<Integer> recordIndex = getIndex(readFile, recoreNumber);//set the recordIndex
+				ArrayList<Record> records = getRecord(readFile, recordIndex);//set the record
 				String[]target;
 				for (int i = 0; i < records.size(); i++) {//search and retrieve data
 					
 					if (records.get(i).getField().get(1).getContent().contains(text)) {
+						System.out.print("BUSINESS NAMES:"+" ");
 						for (int n = 1; n < 9; n++) {
 				
-							System.out.print(recordIndex.get(i).intValue()+""+records.get(i).getField().get(n).getContent()+" ");
+							System.out.print(records.get(i).getField().get(n).getContent()+" ");
 						}
+						System.out.print(" "+count);
 						System.out.println("");
 						
 					}					
@@ -52,16 +64,49 @@ public class dbquery {
 				}
              
 			}
-			calculator.SetEndTime();
-            calculator.CalculateTime2();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Cannot read the Heap File");
 		}
-		
 	}
 
-
+    public void readHeap(int pageSize) {
+    	FileInputStream input;//set the file input stream
+		File file; 
+		try {
+    	String filePath = ("heap." + pageSize);
+    	file = new File(filePath); //set the file to load file from the path
+		input = new FileInputStream(file);//input the file
+		byte[] readFile = new byte[pageSize];//set the array to store heap file's data
+		int count = 0;
+		while (input.read(readFile, 0, pageSize) != -1) {
+			count++;
+			int recoreNumber = getRecordNumber(readFile);//set the recoreNumber
+			if (recoreNumber <= 0)//fill the empty value
+				System.out.println("");
+			ArrayList<Integer> recordIndex = getIndex(readFile, recoreNumber);//set the recordIndex
+			ArrayList<Record> records = getRecord(readFile, recordIndex);//set the record
+			String[]target;
+			for (int i = 0; i < records.size(); i++) {//search and retrieve data
+				
+				if (records.get(i).getField().get(1).getContent().contains("AA")) {
+					for (int n = 1; n < 9; n++) {
+			
+						System.out.print(records.get(i).getField().get(n).getContent()+" ");
+					}
+					System.out.print(count);
+					System.out.println("");
+					
+				}					
+				
+			}
+		}
+		}catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Cannot read the Heap File");
+		}
+    }
 	public int getRecordNumber(byte[] readFile) {//get the record number 
 		byte[] temp = new byte[4];
 		System.arraycopy(readFile, 0, temp, 0, 4);
