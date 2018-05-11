@@ -1,7 +1,11 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 
 /**
@@ -11,6 +15,8 @@ import java.util.ArrayList;
  * @Version 1.0
  */ 
 public class dbquery {
+	
+	private static final String PageSize = null;
 
 	public static void main(String[] args) {
 		dbquery dbquery = new dbquery();//initialize the dbquery
@@ -22,27 +28,24 @@ public class dbquery {
 		pageSize = Integer.parseInt(args[1]); 
 		long startTime = 0;
 		long endTime=0;
-		 //dbquery.readHeap(4096);
-		 Calculate calculator=new Calculate(0,0,startTime,endTime);
-		 calculator.setStatrTime();//start timing
-		 dbquery.searchHeap(text, pageSize);
-		 calculator.SetEndTime();
-         calculator.CalculateTime2();
+		Calculate calculator=new Calculate(0,0,startTime,endTime);
+		calculator.setStatrTime();//start timing
+		searchHeap(text,pageSize);
+		calculator.SetEndTime();
+        calculator.CalculateTime2();
 	}
-	public void searchHeap(String text,int pageSize) {
+	public static void searchHeap(String text,int pageSize) {
+	FileInputStream input= readFile(pageSize);
 		try {
 			
-			FileInputStream input;//set the file input stream
-			File file; //set file varable
-			String filePath = ("heap." +pageSize); // Get the file name
-			file = new File(filePath); //set the file to load file from the path
-			input = new FileInputStream(file);//input the file
+			
 			byte[] readFile = new byte[pageSize];//set the array to store heap file's data
 			int count = 0;
 			
 			while (input.read(readFile, 0, pageSize) != -1) {
-				count++;
+				
 				int recoreNumber = getRecordNumber(readFile);//set the recoreNumber
+				
 				if (recoreNumber <= 0)//fill the empty value
 					System.out.println("");
 				ArrayList<Integer> recordIndex = getIndex(readFile, recoreNumber);//set the recordIndex
@@ -51,63 +54,128 @@ public class dbquery {
 				for (int i = 0; i < records.size(); i++) {//search and retrieve data
 					
 					if (records.get(i).getField().get(1).getContent().contains(text)) {
-						System.out.print("BUSINESS NAMES:"+" ");
+					System.out.print("BUSINESS NAMES:"+" ");
 						for (int n = 1; n < 9; n++) {
 				
 							System.out.print(records.get(i).getField().get(n).getContent()+" ");
-						}
-						System.out.print(" "+count);
-						System.out.println("");
-						
+					}
+					int r =recordIndex.get(recoreNumber);
+					System.out.print(" "+"PageNumber:"+count);
+					System.out.print(" " +"RecordNumber:"+r);
+					System.out.println("");
 					}					
-					
 				}
-             
+				
+				count++;
 			}
-			
+			input.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Cannot read the Heap File");
 		}
 	}
 
-    public void readHeap(int pageSize) {
-    	FileInputStream input;//set the file input stream
-		File file; 
+	
+	public static FileInputStream readFile(int pageSize)
+	{
+		FileInputStream fileInputStream=null;
+		File file = new File("heap."+pageSize);			
 		try {
-    	String filePath = ("heap." + pageSize);
-    	file = new File(filePath); //set the file to load file from the path
-		input = new FileInputStream(file);//input the file
+			fileInputStream = new FileInputStream(file); //read heap file
+		} catch (FileNotFoundException e) {
+			System.err.println("Cannot find the heap file");
+			System.exit(0); //stop the application and exit
+			}  
+			return fileInputStream;
+		}
+	
+    public void readHeap(int pageSize,ArrayList<HashTable> HashTable,int tableSize,int bucketSize) {
+    	int recordNumber = 0;
+		BufferedWriter out = null;
+    	String BNname = null;
+		for(int i=0;i<tableSize;i++)
+		{
+			HashTable hashTable=new HashTable(new ArrayList<Hash>());
+			HashTable.add(hashTable);
+		}
+    	FileInputStream input= readFile(pageSize); //set the file input stream
+		
+		try {
 		byte[] readFile = new byte[pageSize];//set the array to store heap file's data
 		int count = 0;
 		while (input.read(readFile, 0, pageSize) != -1) {
-			count++;
+			
 			int recoreNumber = getRecordNumber(readFile);//set the recoreNumber
 			if (recoreNumber <= 0)//fill the empty value
 				System.out.println("");
 			ArrayList<Integer> recordIndex = getIndex(readFile, recoreNumber);//set the recordIndex
 			ArrayList<Record> records = getRecord(readFile, recordIndex);//set the record
-			String[]target;
-			for (int i = 0; i < records.size(); i++) {//search and retrieve data
-				
-				if (records.get(i).getField().get(1).getContent().contains("AA")) {
-					for (int n = 1; n < 9; n++) {
-			
-						System.out.print(records.get(i).getField().get(n).getContent()+" ");
+		
+			for (int i = 0; i < records.size(); i++) {//retrieve data
+						BNname = new String(records.get(i).getField().get(1).getContent());//get BNNAME
+						int hashcode=Hashcode(BNname, tableSize);//get hash code
+						recordNumber=recordIndex.get(recoreNumber);//get recordNumber
+						if(HashTable.get(hashcode).getIndexlist().size()<bucketSize) //if bucket is not full
+							HashTable.get(hashcode).insert(BNname, count, recordNumber); //insert elements into hash table
+						else
+						{
+							while(HashTable.get(hashcode).getIndexlist().size()>=bucketSize) //if bucket does not have available space
+							{
+								if(hashcode!=tableSize-1)
+								{
+									hashcode++; //insert the data into next bucket
+								}
+								else
+								{
+									hashcode=0; 
+								}
+							}
+							HashTable.get(hashcode).insert(BNname, hashcode, recordNumber); //insert the elements into hash table
+						}
 					}
-					System.out.print(count);
-					System.out.println("");
+			count++;
 					
-				}					
-				
+		}
+		input.close();
+		
+		for(int i=0;i<tableSize;i++)
+		{
+			int hashIndex=i;
+			File file2=new File("hash"+hashIndex+"."+pageSize);
+			try {
+				out=new BufferedWriter(new FileWriter(file2));
+				for(int j=0;j<HashTable.get(hashIndex).getIndexlist().size();j++)
+				{
+					out.write(HashTable.get(hashIndex).getIndexlist().get(j).getBN_NAME(BNname)+" ");
+					out.write(HashTable.get(hashIndex).getIndexlist().get(j).getPageNumber(count)+" ");
+					out.write(HashTable.get(hashIndex).getIndexlist().get(j).getRecordNumber(recordNumber));
+					out.newLine();
+					}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally {
+				out.flush();
 			}
 		}
+		out.close();
+		
 		}catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Cannot read the Heap File");
 		}
     }
-	public int getRecordNumber(byte[] readFile) {//get the record number 
+    
+    public int Hashcode(String BNname, int tableSize) {
+		//build the hash code
+		int hashcode = (Math.abs(BNname.hashCode())) % tableSize;
+		return hashcode;
+	}
+    
+    
+    
+    
+    
+	public static int getRecordNumber(byte[] readFile) {//get the record number 
 		byte[] temp = new byte[4];
 		System.arraycopy(readFile, 0, temp, 0, 4);
 
@@ -115,7 +183,7 @@ public class dbquery {
 
 	}
 
-	public ArrayList<Integer> getIndex(byte[] readFile, int recordNumber) { //get the record index
+	public static ArrayList<Integer> getIndex(byte[] readFile, int recordNumber) { //get the record index
 		ArrayList<Integer> getTheRecordIndex = new ArrayList();
 		byte[] temp = new byte[4];
 		for (int i = 0; i < recordNumber+1; i++) {
@@ -126,7 +194,7 @@ public class dbquery {
 
 	}
 
-	public ArrayList<Record> getRecord(byte[] readFile, ArrayList<Integer> getIndex) {//get the record
+	public static ArrayList<Record> getRecord(byte[] readFile, ArrayList<Integer> getIndex) {//get the record
 		ArrayList<Record> showRecord = new ArrayList();
 
 		for (int i = 0; i < getIndex.size() - 1; i++) {
@@ -142,7 +210,7 @@ public class dbquery {
 		return showRecord;
 	}
 
-	public ArrayList<Field> getField(byte[] readFile, ArrayList<Integer> getFieldIndex) {//get the field
+	public static ArrayList<Field> getField(byte[] readFile, ArrayList<Integer> getFieldIndex) {//get the field
 		ArrayList<Field> getField = new ArrayList<>();
 		for (int i = 0; i < getFieldIndex.size() - 1; i++) {
 			int FieldIndexLength = ((getFieldIndex.get(i + 1)) - getFieldIndex.get(i));
@@ -160,7 +228,7 @@ public class dbquery {
 		return getField;
 	}
 
-	public ArrayList<Integer> getFieldIndex(byte[] readFile) { //get the field index
+	public static ArrayList<Integer> getFieldIndex(byte[] readFile) { //get the field index
 		ArrayList<Integer> getFieldIndex = new ArrayList();
 		byte[] temp = new byte[4];
 		for (int i = 0; i < 9; i++) {
@@ -171,7 +239,7 @@ public class dbquery {
 
 	}
 
-	public int changeToInt(byte[] binaryFile) {//transfer the data type
+	public static int changeToInt(byte[] binaryFile) {//transfer the data type
 		int result = 0;
 		for (int i = 0; i < 4; i++) {
 			result <<= 8;
@@ -180,7 +248,7 @@ public class dbquery {
 		return result;
 	}
 
-	public long changeToLong(byte[] binaryFile) {//transfer the data type
+	public static long changeToLong(byte[] binaryFile) {//transfer the data type
 		long result = 0;
 		for (int i = 0; i < 8; i++) {
 			result <<= 8;
