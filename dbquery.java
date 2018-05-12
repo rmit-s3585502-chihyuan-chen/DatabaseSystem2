@@ -91,7 +91,7 @@ public class dbquery {
 	
     public void readHeap(int pageSize,ArrayList<HashTable> HashTable,int tableSize,int bucketSize) {
     	int recordNumber = 0;
-		BufferedWriter out = null;
+		BufferedWriter writeHash = null;
     	String BNname = null;
 		for(int i=0;i<tableSize;i++)
 		{
@@ -141,23 +141,23 @@ public class dbquery {
 		for(int i=0;i<tableSize;i++)
 		{
 			int hashIndex=i;
-			File file2=new File("hash"+hashIndex+"."+pageSize);
+			File hashFile=new File("hash"+hashIndex+"."+pageSize);
 			try {
-				out=new BufferedWriter(new FileWriter(file2));
+				writeHash=new BufferedWriter(new FileWriter(hashFile));
 				for(int j=0;j<HashTable.get(hashIndex).getIndexlist().size();j++)
 				{
-					out.write(HashTable.get(hashIndex).getIndexlist().get(j).getBN_NAME(BNname)+" ");
-					out.write(HashTable.get(hashIndex).getIndexlist().get(j).getPageNumber(count)+" ");
-					out.write(HashTable.get(hashIndex).getIndexlist().get(j).getRecordNumber(recordNumber));
-					out.newLine();
+					writeHash.write(HashTable.get(hashIndex).getIndexlist().get(j).getBN_NAME(BNname)+" ");
+					writeHash.write(HashTable.get(hashIndex).getIndexlist().get(j).getPageNumber(count)+" ");
+					writeHash.write(HashTable.get(hashIndex).getIndexlist().get(j).getRecordNumber(recordNumber));
+					writeHash.newLine();
 					}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}finally {
-				out.flush();
+				writeHash.flush();
 			}
 		}
-		out.close();
+		writeHash.close();
 		
 		}catch (Exception e) {
 			e.printStackTrace();
