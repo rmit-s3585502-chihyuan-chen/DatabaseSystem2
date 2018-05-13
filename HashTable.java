@@ -10,9 +10,9 @@ import java.util.ArrayList;
 public class HashTable {
 private ArrayList<Hash> indexList=new ArrayList<Hash>();
 	
-	public HashTable(ArrayList<Hash> hashIndexList)
+	public HashTable(ArrayList<Hash> indexList)
 	{
-		this.setIndexlist(hashIndexList);
+		this.setIndexlist(indexList);
 	}
 
 

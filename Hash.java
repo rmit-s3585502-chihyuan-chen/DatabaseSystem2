@@ -8,23 +8,30 @@ public class Hash {
 String BN_NAME;
 int pageNumber;
 int recordNumber;
-
+int duplicate;
+public Hash(String BN_NAME,int pageNumber,int recordNumber,int duplicate) {
+	this.BN_NAME=BN_NAME;
+	this.pageNumber=pageNumber;
+	this.recordNumber=recordNumber;
+	this.duplicate=duplicate;
+}
 public Hash(String BN_NAME,int pageNumber,int recordNumber) {
 	this.BN_NAME=BN_NAME;
 	this.pageNumber=pageNumber;
 	this.recordNumber=recordNumber;
 }
-public String getBN_NAME(String BN_NAME) {
+
+public String getBN_NAME() {
 	return BN_NAME;
 	
 }
 
-public int getPageNumber(int pageNumber) {
+public int getPageNumber() {
 	return pageNumber;
 	
 }
 
-public int getRecordNumber(int recordNumber) {
+public int getRecordNumber() {
 	return recordNumber;
 	
 }
@@ -38,5 +45,10 @@ public void setPageNumber(int pageNumber) {
 public void setRecordNumber(int recordNumber) {
 	this.recordNumber=recordNumber;
 }
-
+public int getDupicate() {
+	return duplicate;
+}
+public void setDuplicate(int duplicate) {
+	this.duplicate=duplicate;
+}
 }
