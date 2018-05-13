@@ -17,11 +17,9 @@ import java.util.List;
 public class hashload {
 
 	public static void main(String[] args) {
-		//hashload hashload=new hashload();
 		dbquery db=new dbquery();
 		long startTime = 0;
 		long endTime=0;
-		int pageIndex = 0;//set the default pageIndex
 		int pageSize;// set the default pageSize
 		ArrayList<HashTable> HashTable=new ArrayList<HashTable>();
 	    pageSize = Integer.parseInt(args[0]); 

@@ -3,7 +3,7 @@
  * @Description: Setting up the field's attributes and calculate its length
  * @Date: Created on 21/03/2018
  * @Version 1.0
- */
+ */ 
 public class Field {
 	 private int Length;         //field's length
 	    private String Content;  //field's content

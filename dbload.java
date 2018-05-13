@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * @Description: dbload main class launches the process of loading ,creating and
  *               timing
  * @Date: Created on 21/03/2018
- * @Version 1.0
+ * @Version 1.0 
  */
 public class dbload {
 	static int newpageSize;

@@ -11,9 +11,9 @@ import java.util.ArrayList;
 
 /**
  * @Author: Chih-Yuan Chen s3585502
- * @Description: running the searching querry
- * @Date: Created on 21/03/2018
- * @Version 1.0
+ * @Description: running the searching querry and support the hashquery
+ * @Date: Created on 04/05/2018
+ * @Version 2.0
  */ 
 public class dbquery {
 	
@@ -39,19 +39,15 @@ public class dbquery {
 	FileInputStream input= readFile(pageSize);
 		try {
 			
-			
 			byte[] readFile = new byte[pageSize];//set the array to store heap file's data
 			int count = 0;
-			
 			while (input.read(readFile, 0, pageSize) != -1) {
-				
 				int recoreNumber = getRecordNumber(readFile);//set the recoreNumber
-				
 				if (recoreNumber <= 0)//fill the empty value
 					System.out.println("");
 				ArrayList<Integer> recordIndex = getIndex(readFile, recoreNumber);//set the recordIndex
 				ArrayList<Record> records = getRecord(readFile, recordIndex);//set the record
-				for (int i = 0; i < records.size(); i++) {//search and retrieve data
+				for (int i = 0; i<records.size(); i++) {//search and retrieve data
 					
 					if (records.get(i).getField().get(1).getContent().contains(text)) {
 					System.out.print("BUSINESS NAMES:"+" ");
@@ -78,33 +74,26 @@ public class dbquery {
 	public static void searchHeap2(String text,int pageSize,int pageNumber,int record) {
 		FileInputStream input= readFile(pageSize);
 			try {
-				
-				
+				int offset=pageNumber*pageSize;
 				byte[] readFile = new byte[pageSize];//set the array to store heap file's data
-				int count = 0;
-				
-				while (input.read(readFile, 0, pageSize) != -1) {
-					int recoreNumber = getRecordNumber(readFile);//set the recoreNumber
-					if (recoreNumber <= 0)//fill the empty value
-						System.out.println("");
-					ArrayList<Integer> recordIndex = getIndex(readFile, recoreNumber);//set the recordIndex
-					ArrayList<Record> records = getRecord(readFile, recordIndex);//set the record
-					for (int i = 0; i < records.size(); i++) {//search and retrieve data
-						
-						if (records.get(i).getField().get(1).getContent().equals(text)&&count==pageNumber) {
+				input.skip(offset);
+				input.read(readFile, 0, pageSize);
+				int recoreNumber1 = getRecordNumber(readFile);//set the recoreNumber
+				if (recoreNumber1 <= 0)//fill the empty value
+					System.out.println("");
+				ArrayList<Integer> recordIndex = getIndex(readFile, recoreNumber1);//set the recordIndex
+				ArrayList<Record> records = getRecord(readFile, recordIndex);//set the recor
+				for(int i=0;i<records.size();i++) {
+					if(records.get(i).getField().get(1).getContent().equals(text)) {
 						System.out.print("BUSINESS NAMES:"+" ");
-							for (int n = 1; n < 9; n++) {
-					
-								System.out.print(records.get(i).getField().get(n).getContent()+" ");
-						}
+						for (int n = 1; n < 9; n++) {
+							
+							System.out.print(records.get(i).getField().get(n).getContent()+" ");
+					}
 						System.out.print(" "+"PageNumber:"+pageNumber);
 						System.out.print(" " +"RecordNumber:"+record);
 						System.out.println("");
-						}					
-					
 					}
-					
-					count++;
 				}
 				input.close();
 			} catch (Exception e) {
@@ -127,7 +116,6 @@ public class dbquery {
 	
 	
     public void readHeap(int pageSize,ArrayList<HashTable> HashTable,int tableSize,int bucketSize) {
-		BufferedWriter writeHash = null;
     	String BNname = null;
 		for(int i=0;i<tableSize;i++)
 		{
@@ -135,7 +123,6 @@ public class dbquery {
 			HashTable.add(hashTable);
 		}
     	FileInputStream input= readFile(pageSize); //set the file input stream
-		
 		try {
 		byte[] readFile = new byte[pageSize];//set the array to store heap file's data
 		int count = 0;
@@ -154,7 +141,6 @@ public class dbquery {
 						int recordNumber2=recordIndex.get(recoreNumber);//get recordNumber
 						if(HashTable.get(hashcode).getIndexlist().size()<bucketSize) { //if bucket is not full
 							HashTable.get(hashcode).insert(BNname, count, recordNumber2); //insert elements into hash table
-						//System.out.println(BNname+" "+count+" "+" "+recordNumber2);
 						}
 						else
 						{
@@ -172,12 +158,17 @@ public class dbquery {
 							HashTable.get(hashcode).insert(BNname, count, recordNumber2); //insert the elements into hash table
 						}
 					}
-			count++;
-					
+			count++;		
 		}
-	
 		input.close();
-		
+		outHashFile(tableSize,pageSize,HashTable);
+    }catch(Exception e) {
+    System.err.println("Cannot read the heap file");	
+    }
+    }
+    
+	public void outHashFile(int tableSize,int pageSize, ArrayList<HashTable> HashTable) throws IOException {
+	 BufferedWriter writeHash = null;
 		for(int i=0;i<tableSize;i++)
 		{
 			int Index=i;
@@ -192,18 +183,15 @@ public class dbquery {
 					writeHash.newLine();
 					}
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.err.println("Cannot write the Hash File");
 			}finally {
 				writeHash.flush();
 			}
 		}
 		writeHash.close();
-		
-		}catch (Exception e) {
-			e.printStackTrace();
-			System.err.println("Cannot read the Heap File");
 		}
-    }
+		
+    
     public void searchHash(String text,ArrayList<Hash>recordNo,int pageSize,int tableSize,int bucketSize) throws IOException {
     int hashnumber=text.hashCode();
     int textHashcode= Hashcode(hashnumber,tableSize);	
@@ -224,7 +212,6 @@ public class dbquery {
     }
     
     public int Hashcode(int hashnumber, int tableSize) {
-		//build the hash code
 		int hashcode = Math.abs(hashnumber)%tableSize;
 		return hashcode;
 	}
@@ -243,7 +230,6 @@ public class dbquery {
 	
 	public static ArrayList<Hash>getRecord(int pageSize,int textHashcode,String text,int bucketSize,int tableSize) throws IOException{
 	ArrayList<Hash> recordNo=new ArrayList<Hash>();
-	System.out.println(textHashcode);
 	int recordNumber=bucketSize;
 	while(recordNumber>=bucketSize) {
 		String row="";
@@ -256,17 +242,6 @@ public class dbquery {
 			if(collection[0].equals(text)) {
 				 recordNo.add(new Hash(collection[0],Integer.valueOf(collection[1]),Integer.valueOf(collection[2])));
 			}
-			
-			
-		if(recordNumber>=bucketSize) {
-		System.out.println("Cannot find the target in the current bucket,it will find in next");
-		
-		}
-		else {
-			//System.out.println("Cannot find");
-			}
-		
-		
 		}
 		if(textHashcode==tableSize) {
 			textHashcode=0;

@@ -7,7 +7,7 @@ import java.util.*;
  * @Author: Chih-Yuan Chen s3585502
  * @Description: calculate the time,numbers of page and record
  * @Date: Created on 21/03/2018
- * @Version 1.0
+ * @Version 1.0 
  */
 public class Calculate {
 	int pageNumber; //set the pagenumber's data type
@@ -46,6 +46,16 @@ public class Calculate {
 		System.out.println("The number of milliseconds to create the heap file:"+Long.toString(endTime-startTime));
 		
 		}
+	
+	public void CalculateTime3(){ //calculate the time and output the page number ,record number and time 
+		System.out.println("The number of milliseconds to create the hash file:"+Long.toString(endTime-startTime));
+		
+		}
+	public void CalculateTime4(){ //calculate the time and output the page number ,record number and time 
+		System.out.println("The number of milliseconds to find target via the hash :"+Long.toString(endTime-startTime));
+		
+		}
+	
 	public void CalculateTime2(){ //calculate the total time taken to do all the search opera-tions in milliseconds 
 		System.out.println("The total time taken to do all the search opera-tions in milliseconds:"+(Long.toString(endTime-startTime)));
 		
