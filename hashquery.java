@@ -17,7 +17,7 @@ import java.util.Hashtable;
 public class hashquery {
 
 	public static void main(String[] args) {
-		dbquery search= new dbquery();
+		dbquery search= new dbquery();//use the dbquery class to run the methods
 		try {
 			int length = args.length; // Store the page size
 			int pagesizeindex = length - 1; // set the position of page size
@@ -26,22 +26,22 @@ public class hashquery {
 			int tableSize=1024 -1;
 			double occupacy=0.995;
 			int bucketSize=(int) (( recordsNumber /occupacy) / tableSize);
-			String text = args[0]; // Store the target text
+			String text = args[0]; // Store the query text
 			ArrayList<Hash> recordNO=new ArrayList<Hash>();
-			// Get all the content of text
+			//get the full query text
 			for (int i = 1; i < pagesizeindex; i++) {
 				text = text + " " + args[i];
 			}
-			long startTime = 0;
-			long endTime=0;
-			Calculate calculator=new Calculate(0,0,startTime,endTime);
-			calculator.setStatrTime();
-			search.searchHash(text, recordNO, pageSize, tableSize, bucketSize); // Implementation of searching
-			calculator.SetEndTime();
-			calculator.CalculateTime4();
+			long startTime = 0;//create the start time variable
+			long endTime=0;//create the end time variable
+			Calculate calculator=new Calculate(0,0,startTime,endTime);//use the calculate class to run the timing method 
+			System.out.println("Searching......");
+			calculator.setStatrTime();//set start time
+			search.searchHash(text, recordNO, pageSize, tableSize, bucketSize); //launch the process of searching
+			calculator.SetEndTime();//set the end time
+			calculator.CalculateTime4();//call the method to print out the time information
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.println("Error");
+			System.err.println("Input Eroor!! Please Check again");
 		}
 	}
 	}

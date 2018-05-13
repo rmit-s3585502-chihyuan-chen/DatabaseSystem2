@@ -71,9 +71,10 @@ public class dbquery {
 		}
 	}
 
-	public static void searchHeap2(String text,int pageSize,int pageNumber,int record) {
+	public static void searchHeap2(String text,int pageSize,int pageNumber,int record) {//read the specific page to find the targert
 		FileInputStream input= readFile(pageSize);
 			try {
+				//read specific page by skipping the byte
 				int offset=pageNumber*pageSize;
 				byte[] readFile = new byte[pageSize];//set the array to store heap file's data
 				input.skip(offset);
@@ -99,33 +100,33 @@ public class dbquery {
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.err.println("Cannot read the Heap File");
+				System.exit(0); //stop the application and exit
 			}
 		}
-	public static FileInputStream readFile(int pageSize)
-	{
+	public static FileInputStream readFile(int pageSize){//read the heap file
 		FileInputStream fileInputStream=null;
 		File file = new File("heap."+pageSize);			
 		try {
-			fileInputStream = new FileInputStream(file); //read heap file
+			fileInputStream = new FileInputStream(file); 
 		} catch (FileNotFoundException e) {
-			System.err.println("Cannot find the heap file");
+			System.err.println("Cannot find the heap file! Please check the input page size!!");
 			System.exit(0); //stop the application and exit
 			}  
 			return fileInputStream;
 		}
 	
 	
-    public void readHeap(int pageSize,ArrayList<HashTable> HashTable,int tableSize,int bucketSize) {
+    public void readHeap(int pageSize,ArrayList<HashTable> HashTable,int tableSize,int bucketSize) {//read heap file and store data into hashtable ArrayList
     	String BNname = null;
-		for(int i=0;i<tableSize;i++)
-		{
+    	//establish the new hashtable and insert it into ArrayList
+    	for(int i=0;i<tableSize;i++) { 
 			HashTable hashTable=new HashTable(new ArrayList<Hash>());
 			HashTable.add(hashTable);
 		}
     	FileInputStream input= readFile(pageSize); //set the file input stream
 		try {
 		byte[] readFile = new byte[pageSize];//set the array to store heap file's data
-		int count = 0;
+		int count = 0;//set the count for counting the pageNumber
 		while (input.read(readFile, 0, pageSize) != -1) {
 			
 			int recoreNumber = getRecordNumber(readFile);//set the recoreNumber
@@ -133,7 +134,6 @@ public class dbquery {
 				System.out.println("");
 			ArrayList<Integer> recordIndex = getIndex(readFile, recoreNumber);//set the recordIndex
 			ArrayList<Record> records = getRecord(readFile, recordIndex);//set the record
-		
 			for (int i = 0; i < records.size(); i++) {//retrieve data
 						BNname = new String(records.get(i).getField().get(1).getContent());//get BNNAME
 						int hashnumber=BNname.hashCode();
@@ -142,17 +142,14 @@ public class dbquery {
 						if(HashTable.get(hashcode).getIndexlist().size()<bucketSize) { //if bucket is not full
 							HashTable.get(hashcode).insert(BNname, count, recordNumber2); //insert elements into hash table
 						}
-						else
-						{
-							while(HashTable.get(hashcode).getIndexlist().size()>=bucketSize) //if bucket does not have available space
-							{
-								if(hashcode!=tableSize-1)
-								{
-									hashcode++; //insert the data into next bucket
+						else {
+						while(HashTable.get(hashcode).getIndexlist().size()>=bucketSize) { //if bucket does not have available space
+						if(hashcode!=tableSize-1) {
+						   hashcode++; //insert the data into next bucket
 								}
 								else
 								{
-									hashcode=0; 
+									hashcode=0; //output to the first hash table
 								}
 							}
 							HashTable.get(hashcode).insert(BNname, count, recordNumber2); //insert the elements into hash table
@@ -163,11 +160,12 @@ public class dbquery {
 		input.close();
 		outHashFile(tableSize,pageSize,HashTable);
     }catch(Exception e) {
-    System.err.println("Cannot read the heap file");	
+    System.err.println("Cannot read the heap file");
+    System.exit(0); //stop the application and exit
     }
     }
     
-	public void outHashFile(int tableSize,int pageSize, ArrayList<HashTable> HashTable) throws IOException {
+	public void outHashFile(int tableSize,int pageSize, ArrayList<HashTable> HashTable) throws IOException {//output the hash file 
 	 BufferedWriter writeHash = null;
 		for(int i=0;i<tableSize;i++)
 		{
@@ -177,13 +175,14 @@ public class dbquery {
 				writeHash=new BufferedWriter(new FileWriter(hashFile));
 				for(int j=0;j<HashTable.get(Index).getIndexlist().size();j++)
 				{
-					writeHash.write(HashTable.get(Index).getIndexlist().get(j).getBN_NAME());
+					writeHash.write(HashTable.get(Index).getIndexlist().get(j).getBN_NAME());//get BN_NAME from hash table and 
 					writeHash.write("\t"+HashTable.get(Index).getIndexlist().get(j).getPageNumber());
 					writeHash.write("\t"+HashTable.get(Index).getIndexlist().get(j).getRecordNumber());
 					writeHash.newLine();
 					}
 			} catch (Exception e) {
-				System.err.println("Cannot write the Hash File");
+				System.err.println("Cannot output the Hash File");
+				System.exit(0); //stop the application and exit
 			}finally {
 				writeHash.flush();
 			}
@@ -228,9 +227,10 @@ public class dbquery {
 	}
 
 	
-	public static ArrayList<Hash>getRecord(int pageSize,int textHashcode,String text,int bucketSize,int tableSize) throws IOException{
+	public static ArrayList<Hash>getRecord(int pageSize,int textHashcode,String text,int bucketSize,int tableSize) { //get the record from the hashfile
 	ArrayList<Hash> recordNo=new ArrayList<Hash>();
 	int recordNumber=bucketSize;
+	try {
 	while(recordNumber>=bucketSize) {
 		String row="";
 		recordNumber=0;
@@ -249,9 +249,11 @@ public class dbquery {
 		textHashcode++;
 		reading.close();	
 	}
+	}catch(IOException e) {
+		System.err.println("Cannot read the hash File");
+	}
 	return recordNo;
 	}
-	
 	
 	public static ArrayList<Integer> getIndex(byte[] readFile, int recordNumber) { //get the record index
 		ArrayList<Integer> getTheRecordIndex = new ArrayList();

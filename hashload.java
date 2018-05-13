@@ -17,9 +17,10 @@ import java.util.List;
 public class hashload {
 
 	public static void main(String[] args) {
-		dbquery db=new dbquery();
-		long startTime = 0;
-		long endTime=0;
+		try {
+		dbquery db=new dbquery();//use the dbquery class to run the methods
+		long startTime = 0;//create the start time variable
+		long endTime=0;//create the end time variable
 		int pageSize;// set the default pageSize
 		ArrayList<HashTable> HashTable=new ArrayList<HashTable>();
 	    pageSize = Integer.parseInt(args[0]); 
@@ -27,12 +28,15 @@ public class hashload {
 		int tableSize=1024 -1;
 		double occupacy=0.995;
 		int bucketSize=(int) (( recordsNumber /occupacy) / tableSize);
-		Calculate calculator=new Calculate(0,0,startTime,endTime);
+		Calculate calculator=new Calculate(0,0,startTime,endTime);//use the calculate class to run the timing method 
 	    System.out.println("Loading and Creating....");
-        calculator.setStatrTime();
-	    db.readHeap(pageSize,HashTable, tableSize, bucketSize);
-	    calculator.SetEndTime();
-	    calculator.CalculateTime3();
+        calculator.setStatrTime();//set start time
+	    db.readHeap(pageSize,HashTable, tableSize, bucketSize);//launch the process of reading the heap file and output the hash file
+	    calculator.SetEndTime();//set the end time
+	    calculator.CalculateTime3();//call the method to print out the time information
 	    System.out.println("Successfully creat the hashFile!!");
+	}catch(Exception e) {
+		System.err.println("Input error!! Please input the correct pagesize");
+	}
 	}
 	}
